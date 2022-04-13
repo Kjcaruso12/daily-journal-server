@@ -3,8 +3,8 @@ CREATE TABLE `JournalEntries` (
 	`concept`	TEXT NOT NULL,
 	`entry`	TEXT NOT NULL,
     `date` CURRENT_DATE NOT NULL,
-    `mood_id` INTEGER NOT NULL,
-    FOREIGN KEY(`mood_id`) REFERENCES `Moods`(`id`)
+    `moodId` INTEGER NOT NULL,
+    FOREIGN KEY(`moodId`) REFERENCES `Moods`(`id`)
 );
 
 CREATE TABLE `Moods` (
@@ -14,7 +14,7 @@ CREATE TABLE `Moods` (
 
 CREATE TABLE `EntryTags` (
 	`id`  INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	`entry_id` INTEGER NOT NULL,
+	`entry_Id` INTEGER NOT NULL,
 	`tag_id` INTEGER,
 	FOREIGN KEY(`entry_id`) REFERENCES `JournalEntries`(`id`),
 	FOREIGN KEY(`tag_id`) REFERENCES `Tags`(`id`)
@@ -44,3 +44,35 @@ INSERT INTO `EntryTags` VALUES (null, 3, 2);
 INSERT INTO `EntryTags` VALUES (null, 2, 3);
 
 SELECT * FROM `JournalEntries` WHERE entry LIKE "Python%";
+
+ALTER TABLE `JournalEntries`
+ADD `tags` TEXT NOT NULL
+
+SELECT * FROM JournalEntries e JOIN EntryTags et ON e.id = et.entry_Id
+INSERT INTO `EntryTags` VALUES (null, 1, 3);
+
+SELECT
+*
+FROM JournalEntries e
+JOIN EntryTags et
+	ON e.id = et.entry_Id
+JOIN Tags t
+	ON t.id = et.tag_id
+GROUP BY t.id
+ORDER BY e.id ASC
+
+SELECT
+et.id entrytag_id,
+t.id tag_id,
+et.entry_id,
+e.id,
+e.concept,
+e.entry,
+e.date,
+e.moodId
+FROM EntryTags et
+JOIN Tags t
+	ON t.id = et.tag_id
+JOIN Journalentries e
+	ON e.id = 3
+WHERE et.entry_id = e.id

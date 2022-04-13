@@ -1,6 +1,8 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from views import get_all_entries, get_single_entry, get_all_moods, get_single_mood
-from views.entry_requests import delete_entry
+import json
+from views import get_all_entries, get_single_entry, get_entries_by_query, get_all_moods, get_single_mood, get_all_entryTags
+from views.entry_requests import create_entry, delete_entry, update_entry
+from views.tag_requests import get_all_tags
 
 
 # Here's a class. It inherits from another class.
@@ -92,14 +94,75 @@ class HandleRequests(BaseHTTPRequestHandler):
                     response = f"{get_single_entry(id)}"
                 else:
                     response = f"{get_all_entries()}"
-
             if resource == "moods":
                 if id is not None:
                     response = f"{get_single_mood(id)}"
                 else:
                     response = f"{get_all_moods()}"
+            if resource == "tags":
+                    response = f"{get_all_tags()}"
+            if resource == "entrytags":
+                    response = f"{get_all_entryTags()}"
+
+        # Response from parse_url() is a tuple with 3
+        # items in it, which means the request was for
+        # `/resource?parameter=value`
+        elif len(parsed) == 3:
+            ( resource, key, value ) = parsed
+
+            # Is the resource `customers` and was there a
+            # query parameter that specified the customer
+            # email as a filtering value?
+            if key == "q" and resource == "entries":
+                response = get_entries_by_query(value)
 
         self.wfile.write(response.encode())
+
+    def do_POST(self):
+        self._set_headers(201)
+        content_len = int(self.headers.get('content-length', 0))
+        post_body = self.rfile.read(content_len)
+
+        # Convert JSON string to a Python dictionary
+        post_body = json.loads(post_body)
+
+        # Parse the URL
+        (resource, id) = self.parse_url(self.path)
+
+        # Initialize new object
+        response = None
+
+        # Add a new animal to the list. Don't worry about
+        # the orange squiggle, you'll define the create_animal
+        # function next.
+        if resource == "entries":
+            response = create_entry(post_body)
+
+
+        # Encode the new animal and send in response
+        self.wfile.write(f"{response}".encode())
+
+
+    def do_PUT(self):
+        content_len = int(self.headers.get('content-length', 0))
+        post_body = self.rfile.read(content_len)
+        post_body = json.loads(post_body)
+
+        # Parse the URL
+        (resource, id) = self.parse_url(self.path)
+
+        success = False
+
+        if resource == "entries":
+            success = update_entry(id, post_body)
+        # rest of the elif's
+
+        if success:
+            self._set_headers(204)
+        else:
+            self._set_headers(404)
+
+        self.wfile.write("".encode())
 
 
     def do_DELETE(self):

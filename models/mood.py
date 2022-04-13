@@ -1,5 +1,5 @@
 class Mood():
 
-    def __init__(self, id, lebel):
+    def __init__(self, id, label):
         self.id = id
-        self.label = lebel
+        self.label = label

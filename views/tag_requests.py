@@ -1,8 +1,8 @@
 import sqlite3
-from models import Mood
 import json
+from models import Tag
 
-def get_all_moods():
+def get_all_tags():
     # Open a connection to the database
     with sqlite3.connect("./dailyjournal.sqlite3") as conn:
 
@@ -13,13 +13,13 @@ def get_all_moods():
         # Write the SQL query to get the information you want
         db_cursor.execute("""
         SELECT
-            m.id,
-            m.label
-        FROM Moods m
+            t.id,
+            t.subject
+        FROM Tags t
         """)
 
         # Initialize an empty list to hold all location representations
-        moods = []
+        tags = []
 
         # Convert rows of data into a Python list
         dataset = db_cursor.fetchall()
@@ -31,33 +31,9 @@ def get_all_moods():
             # Note that the database fields are specified in
             # exact order of the parameters defined in the
             # Location class above.
-            entry = Mood(row['id'], row['label'])
+            entry = Tag(row['id'], row['subject'])
 
-            moods.append(entry.__dict__)
+            tags.append(entry.__dict__)
 
     # Use `json` package to properly serialize list as JSON
-    return json.dumps(moods)
-
-
-def get_single_mood(id):
-    with sqlite3.connect("./dailyjournal.sqlite3") as conn:
-        conn.row_factory = sqlite3.Row
-        db_cursor = conn.cursor()
-
-        # Use a ? parameter to inject a variable's value
-        # into the SQL statement.
-        db_cursor.execute("""
-        SELECT
-            m.id,
-            m.label
-        FROM Moods m
-        WHERE e.id = ?
-        """, ( id, ))
-
-        # Load the single result into memory
-        data = db_cursor.fetchone()
-
-        # Create a location instance from the current row
-        mood = Mood(data['id'], data['label'])
-
-        return json.dumps(mood.__dict__)
+    return json.dumps(tags)
